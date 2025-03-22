@@ -27,9 +27,7 @@ class LoginScreen extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () => loginBox.mockLogin(),
                       child: Text(
-                        state is LoadingDialogState
-                            ? 'Loading...'
-                            : 'Mock Login',
+                        state is LoadingState ? 'Loading...' : 'Mock Login',
                       ),
                     ),
                   ],
@@ -52,4 +50,9 @@ class LoginBox extends SimpleBox {
     //sending success state to the UI
     updateState(SuccessState());
   }
+
+  // Use pre defined states like loading, error, success, and more
+  //And also you can define your own like follows
+
+  // class MyDefinedState extends SimpleBoxState  {}
 }

@@ -1,7 +1,8 @@
 name: simple_box
 description: A simple state management solution that uses streams.
-version: 1.0.0
-homepage: https://github.com/Alizendah93/simple-box.git
+version: 1.0.3
+repository: https://github.com/Alizendah93/simple-box.git
+homepage: https://pub.dev/packages/simple_box
 
 environment:
   sdk: ^3.7.0
