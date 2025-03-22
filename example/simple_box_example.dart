@@ -13,7 +13,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: SimpleBoxWidget(
+        body: SimpleBoxWidget<SimpleBoxState>(
           listener: (SimpleBoxState state) {
             // Do Anything here like dialogs ,routing...
           },
@@ -41,7 +41,7 @@ class LoginScreen extends StatelessWidget {
 }
 
 //create a class and extend SimpleBox
-class LoginBox extends SimpleBox {
+class LoginBox extends SimpleBox<SimpleBoxState> {
   void mockLogin() async {
     //sending loading state to the UI
     updateState(LoadingState());

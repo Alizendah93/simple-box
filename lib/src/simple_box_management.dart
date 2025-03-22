@@ -2,21 +2,58 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:simple_box/src/simple_box_state.dart';
 
-class SimpleBox {
-  final StreamController<SimpleBoxState> _streamController =
-      StreamController<SimpleBoxState>.broadcast();
+class SimpleBox<T extends SimpleBoxState> {
+  final StreamController<T> _streamController =
+      StreamController<T>.broadcast();
+  int _referenceCount = 0;
+  bool _isDisposed = false;
+
+  // Expose these for testing
+  @visibleForTesting
+  int get referenceCount => _referenceCount;
+  
+  @visibleForTesting
+  bool get isDisposed => _isDisposed;
+
+  @visibleForTesting
+  void addReference() => _addReference();
+  
+  @visibleForTesting
+  void removeReference() => _removeReference();
 
   @protected
-  void updateState(SimpleBoxState state) => _streamController.sink.add(state);
+  void updateState(T state) {
+    if (!_isDisposed) {
+      try {
+        _streamController.sink.add(state);
+      } catch (e) {
+        debugPrint('Error updating state: $e');
+      }
+    }
+  }
 
-  Stream<SimpleBoxState> get _stream => _streamController.stream;
+  Stream<T> get _stream => _streamController.stream;
+
+  void _addReference() {
+    _referenceCount++;
+  }
+
+  void _removeReference() {
+    _referenceCount--;
+    if (_referenceCount <= 0) {
+      _dispose();
+    }
+  }
 
   void _dispose() {
-    _streamController.close();
+    if (!_isDisposed) {
+      _isDisposed = true;
+      _streamController.close();
+    }
   }
 }
 
-class SimpleBoxWidget extends StatefulWidget {
+class SimpleBoxWidget<T extends SimpleBoxState> extends StatefulWidget {
   const SimpleBoxWidget({
     super.key,
     required this.builder,
@@ -24,30 +61,39 @@ class SimpleBoxWidget extends StatefulWidget {
     required this.simpleBox,
   });
 
-  final Widget Function(SimpleBoxState) builder;
-  final void Function(SimpleBoxState)? listener;
-  final SimpleBox simpleBox;
+  final Widget Function(T) builder;
+  final void Function(T)? listener;
+  final SimpleBox<T> simpleBox;
 
   @override
-  State<SimpleBoxWidget> createState() => _SimpleBoxWidgetState();
+  State<SimpleBoxWidget<T>> createState() => _SimpleBoxWidgetState<T>();
 }
 
-class _SimpleBoxWidgetState extends State<SimpleBoxWidget> {
+class _SimpleBoxWidgetState<T extends SimpleBoxState> extends State<SimpleBoxWidget<T>> {
+  @override
+  void initState() {
+    super.initState();
+    widget.simpleBox._addReference();
+  }
+
   @override
   void dispose() {
-    widget.simpleBox._dispose();
+    widget.simpleBox._removeReference();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<SimpleBoxState>(
+    return StreamBuilder<T>(
       stream: widget.simpleBox._stream,
       builder: (_, snapshot) {
+        // Create the state only once
+        final T state = snapshot.data ?? InitialState() as T;
+        
         if (widget.listener != null) {
-          widget.listener!(snapshot.data ?? InitialState());
+          widget.listener!(state);
         }
-        return widget.builder(snapshot.data ?? InitialState());
+        return widget.builder(state);
       },
     );
   }
