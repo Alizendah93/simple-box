@@ -1,3 +1,5 @@
-## 1.0.7
+## 1.0.8
 
-- Initial version.
+- Updated Flutter compatibility
+- Updated dependencies
+- Fixed deprecated APIs
