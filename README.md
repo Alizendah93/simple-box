@@ -28,7 +28,7 @@ Add SimpleBox to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  simple_box: ^1.0.3
+  simple_box: 
 ```
 
 Then run:
